@@ -1,0 +1,7 @@
+{
+    "name": "hbase21xreader",
+    "class": "ni.danny.datax.plugin.reader.hbase21xreader.Hbase21xReader",
+    "description": "useScene: prod. mechanism: Scan to read data.filter 字段仅支持前缀过滤器，控制分区后的范围",
+    "developer": "danny.ni"
+}
+

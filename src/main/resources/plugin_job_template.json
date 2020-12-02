@@ -1,0 +1,16 @@
+{
+    "name": "hbase21xreader",
+    "parameter": {
+        "hbaseConfig": {},
+        "table": "",
+        "encoding": "",
+        "mode": "",
+        "column": [],
+        "filter": {"type":"","value":"","format":""},
+        "range": {
+            "startRowkey": "",
+            "endRowkey": "",
+            "isBinaryRowkey": true
+        }
+    }
+}
