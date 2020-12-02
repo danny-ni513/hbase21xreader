@@ -190,33 +190,40 @@ public class Hbase21xHelper {
         String startRowkey = configuration.getString(Key.START_ROWKEY);
         String prefixFilterValue = Hbase21xHelper.getPrefixFilter(configuration);
 
-        if (StringUtils.isBlank(startRowkey)) {
-            return HConstants.EMPTY_BYTE_ARRAY;
-        }else{
-            if(StringUtils.isBlank(prefixFilterValue)){
-                return Bytes.toBytesBinary(startRowkey);
-            }else{
-                return Bytes.toBytesBinary(startRowkey+prefixFilterValue);
+        if(StringUtils.isBlank(prefixFilterValue)){
+            if (StringUtils.isBlank(startRowkey)) {
+                return HConstants.EMPTY_BYTE_ARRAY;
             }
+
+            return Bytes.toBytesBinary(startRowkey);
+
+        }else{
+            if(StringUtils.isBlank(startRowkey)){
+                return Bytes.toBytesBinary("9999999"+prefixFilterValue);
+            }
+            return Bytes.toBytesBinary(startRowkey+prefixFilterValue);
         }
+
     }
 
     public static byte[] convertInnerEndRowkey(com.alibaba.datax.common.util.Configuration configuration) {
         String endRowkey = configuration.getString(Key.END_ROWKEY);
         String prefixFilterValue = Hbase21xHelper.getPrefixFilter(configuration);
-        if (StringUtils.isBlank(endRowkey)) {
-            return HConstants.EMPTY_BYTE_ARRAY;
-        }else{
-            if(StringUtils.isBlank(prefixFilterValue)){
-                return Bytes.toBytesBinary(endRowkey);
-            }else{
-                String startRowkey = configuration.getString(Key.START_ROWKEY);
-                if (StringUtils.isBlank(startRowkey)) {
-                    return HConstants.EMPTY_BYTE_ARRAY;
-                }else {
-                    return Bytes.toBytesBinary(startRowkey+prefixFilterValue+"~");
-                }
+        if(StringUtils.isBlank(prefixFilterValue)){
+            if (StringUtils.isBlank(endRowkey)) {
+                return HConstants.EMPTY_BYTE_ARRAY;
             }
+            return Bytes.toBytesBinary(endRowkey);
+
+        }else{
+
+            String startRowkey = configuration.getString(Key.START_ROWKEY);
+            if (StringUtils.isBlank(startRowkey)) {
+                return Bytes.toBytesBinary("9999999"+prefixFilterValue);
+            }else {
+                return Bytes.toBytesBinary(startRowkey+prefixFilterValue+"~");
+            }
+
         }
     }
 

@@ -53,6 +53,10 @@ public abstract class HbaseAbstractTask {
     public abstract void initScan(Scan scan);
 
     public void prepare() throws Exception {
+
+        LOG.info("The task set startRowkey=[{}], endRowkey=[{}].", Bytes.toStringBinary(this.startKey), Bytes.toStringBinary(this.endKey));
+
+
         this.scan = new Scan();
 
         if(this.scanLimitSize>0){
@@ -64,7 +68,8 @@ public abstract class HbaseAbstractTask {
 
         this.scan.withStartRow(startKey);
         this.scan.withStopRow(endKey);
-        LOG.info("The task set startRowkey=[{}], endRowkey=[{}].", Bytes.toStringBinary(this.startKey), Bytes.toStringBinary(this.endKey));
+
+
         //scan的Caching Batch全部留在hconfig中每次从服务器端读取的行数，设置默认值未256
         this.scan.setCaching(this.scanCacheSize);
         //设置获取记录的列个数，hbase默认无限制，也就是返回所有的列,这里默认是100
