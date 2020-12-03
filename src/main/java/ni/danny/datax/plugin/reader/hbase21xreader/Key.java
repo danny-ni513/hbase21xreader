@@ -57,5 +57,7 @@ public final class Key {
 
     public final static String FILTER_FORMAT = "filter.format";
 
+    public final static String DEFAULT = "default";
+
 
 }

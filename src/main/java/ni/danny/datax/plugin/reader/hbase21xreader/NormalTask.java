@@ -74,10 +74,15 @@ public class NormalTask extends HbaseAbstractTask {
                         columnFamily =cell.getColumnFamily();
                         qualifier = cell.getQualifier();
                         hbaseColumnValue = result.getValue(columnFamily,qualifier);
+
                         if( !Arrays.equals(HConstants.EMPTY_BYTE_ARRAY,cell.getFilterValue())
                                 &&Arrays.equals(cell.getFilterValue(),hbaseColumnValue)){
                             hbaseColumnValue = HConstants.EMPTY_BYTE_ARRAY;
-                            //LOG.info("REMOVE FILTER VALUE====>");
+                        }
+
+                        if( !Arrays.equals(HConstants.EMPTY_BYTE_ARRAY,cell.getDefaultValue())
+                                && Arrays.equals(HConstants.EMPTY_BYTE_ARRAY,hbaseColumnValue)){
+                            hbaseColumnValue = cell.getDefaultValue();
                         }
                     }
 

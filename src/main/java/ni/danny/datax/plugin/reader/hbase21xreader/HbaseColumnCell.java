@@ -31,6 +31,8 @@ public class HbaseColumnCell extends BaseObject {
     //过滤值，当查询结果与该值相同时，过滤
     private byte[] filterValue = HConstants.EMPTY_BYTE_ARRAY;
 
+    private byte[] defaultValue = HConstants.EMPTY_BYTE_ARRAY;
+
     private HbaseColumnCell(Builder builder) {
         this.columnType = builder.columnType;
 
@@ -64,13 +66,25 @@ public class HbaseColumnCell extends BaseObject {
             this.dateformat = builder.dateformat;
         }
 
-        if(builder.filterValue != null){
+
+        if(builder.filterValue != null && StringUtils.isNotBlank(builder.filterValue)){
             try{
+                //LOG.info("IN CELL PUT FILTER => COLUMN=[{}],TYPE=[{}],FILTER=[{}]",columnName,columnType.toString(),builder.filterValue);
                 this.filterValue = Hbase21xHelper.convertFilterToBytesAssignType(this.columnType,builder.filterValue);
             }catch (Exception ex){
                 LOG.warn(ex.getMessage());
             }
         }
+
+        if(builder.defaultValue != null && StringUtils.isNotBlank(builder.defaultValue)){
+            try{
+                //LOG.info("IN CELL PUT DEFAULT => COLUMN=[{}],TYPE=[{}],DEFAULT=[{}]",columnName,columnType.toString(),builder.defaultValue);
+                this.defaultValue = Hbase21xHelper.convertFilterToBytesAssignType(this.columnType,builder.defaultValue);
+            }catch (Exception ex){
+                LOG.warn(ex.getMessage());
+            }
+        }
+
     }
 
     public ColumnType getColumnType() {
@@ -105,6 +119,8 @@ public class HbaseColumnCell extends BaseObject {
         return filterValue;
     }
 
+    public byte[] getDefaultValue(){ return defaultValue; }
+
     // 内部 builder 类
     public static class Builder {
         private ColumnType columnType;
@@ -114,6 +130,8 @@ public class HbaseColumnCell extends BaseObject {
         private String filterValue;
 
         private String dateformat;
+
+        private String defaultValue;
 
         public Builder(ColumnType columnType) {
             this.columnType = columnType;
@@ -136,6 +154,11 @@ public class HbaseColumnCell extends BaseObject {
 
         public Builder filterValue(String filterValue){
             this.filterValue = filterValue;
+            return this;
+        }
+
+        public Builder defaultValue(String defaultValue){
+            this.defaultValue = defaultValue;
             return this;
         }
 

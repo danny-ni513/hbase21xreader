@@ -289,6 +289,9 @@ public class Hbase21xHelper {
             String columnValue = aColumn.get(Key.VALUE);
             String dateformat = aColumn.get(Key.FORMAT);
             String filterValue = aColumn.get(Key.FILTER);
+            String defaultValue = aColumn.get(Key.DEFAULT);
+
+            //LOG.info("columnName = [{}],filterValue=[{}],defaultValue = [{}]",columnName,filterValue,defaultValue);
 
             if (type == ColumnType.DATE) {
 
@@ -303,6 +306,7 @@ public class Hbase21xHelper {
                         .columnValue(columnValue)
                         .dateformat(dateformat)
                         .filterValue(filterValue)
+                        .defaultValue(defaultValue)
                         .build();
             } else {
                 Validate.isTrue(StringUtils.isNotBlank(columnName) || StringUtils.isNotBlank(columnValue), "Hbasereader 在 normal 方式读取时，其列配置中，如果类型不是时间，则要么是 type + name 的组合，要么是type + value 的组合. 而您的配置非这两种组合，请检查并修改.");
@@ -310,6 +314,7 @@ public class Hbase21xHelper {
                         .columnName(columnName)
                         .columnValue(columnValue)
                         .filterValue(filterValue)
+                        .defaultValue(defaultValue)
                         .build();
             }
 
