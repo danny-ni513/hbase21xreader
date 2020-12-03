@@ -5,7 +5,7 @@
         "table": "",
         "encoding": "",
         "mode": "",
-        "column": [],
+        "column": [{"name":"","type":"","filter": ""}],
         "filter": {"type":"","value":"","format":""},
         "range": {
             "startRowkey": "",

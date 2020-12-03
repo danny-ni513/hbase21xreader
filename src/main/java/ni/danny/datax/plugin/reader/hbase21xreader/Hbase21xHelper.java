@@ -1,10 +1,13 @@
 package ni.danny.datax.plugin.reader.hbase21xreader;
 
+import com.alibaba.datax.common.element.*;
 import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HConstants;
@@ -285,6 +288,7 @@ public class Hbase21xHelper {
             String columnName = aColumn.get(Key.NAME);
             String columnValue = aColumn.get(Key.VALUE);
             String dateformat = aColumn.get(Key.FORMAT);
+            String filterValue = aColumn.get(Key.FILTER);
 
             if (type == ColumnType.DATE) {
 
@@ -298,12 +302,14 @@ public class Hbase21xHelper {
                         .columnName(columnName)
                         .columnValue(columnValue)
                         .dateformat(dateformat)
+                        .filterValue(filterValue)
                         .build();
             } else {
                 Validate.isTrue(StringUtils.isNotBlank(columnName) || StringUtils.isNotBlank(columnValue), "Hbasereader 在 normal 方式读取时，其列配置中，如果类型不是时间，则要么是 type + name 的组合，要么是type + value 的组合. 而您的配置非这两种组合，请检查并修改.");
                 oneColumnCell = new HbaseColumnCell.Builder(type)
                         .columnName(columnName)
                         .columnValue(columnValue)
+                        .filterValue(filterValue)
                         .build();
             }
 
@@ -497,6 +503,9 @@ public class Hbase21xHelper {
 
         int scanBatchSize = originalConfig.getInt(Key.SCAN_BATCH_SIZE,Constant.DEFAULT_SCAN_BATCH_SIZE);
         originalConfig.set(Key.SCAN_BATCH_SIZE,scanBatchSize);
+
+        int scanLimitSize = originalConfig.getInt(Key.SCAN_LIMIT_SIZE,Constant.DEFAULT_SCAN_LIMIT);
+        originalConfig.set(Key.SCAN_LIMIT_SIZE,scanLimitSize);
     }
 
     private static String validateMode(com.alibaba.datax.common.util.Configuration  originalConfig) {
@@ -537,5 +546,36 @@ public class Hbase21xHelper {
         Validate.isTrue(isMaxVersionValid, String.format("您配置的是 %s 模式读取 hbase 中的数据，但是配置的 maxVersion 值错误. maxVersion规定：-1为读取全部版本，不能配置为0或者1（因为0或者1，我们认为用户是想用 normal 模式读取数据，而非 %s 模式读取，二者差别大），大于1则表示读取最新的对应个数的版本", mode, mode));
     }
 
-
+    public static byte[] convertFilterToBytesAssignType(ColumnType columnType,String value) throws Exception {
+        byte[] bytes;
+        switch (columnType) {
+            case BOOLEAN:
+                bytes = StringUtils.isBlank(value) ? HConstants.EMPTY_BYTE_ARRAY : Bytes.toBytes(Boolean.valueOf(value));
+                break;
+            case SHORT:
+                bytes = StringUtils.isBlank(value) ? HConstants.EMPTY_BYTE_ARRAY : Bytes.toBytes(Short.valueOf(value));
+                break;
+            case INT:
+                bytes = StringUtils.isBlank(value) ? HConstants.EMPTY_BYTE_ARRAY : Bytes.toBytes(Integer.valueOf(value));
+                break;
+            case LONG:
+                bytes =  StringUtils.isBlank(value) ? HConstants.EMPTY_BYTE_ARRAY : Bytes.toBytes(Long.valueOf(value));
+                break;
+            case FLOAT:
+                bytes =  StringUtils.isBlank(value) ? HConstants.EMPTY_BYTE_ARRAY : Bytes.toBytes(Float.valueOf(value));
+                break;
+            case DOUBLE:
+                bytes =  StringUtils.isBlank(value) ? HConstants.EMPTY_BYTE_ARRAY : Bytes.toBytes(Double.valueOf(value));
+                break;
+            case STRING:
+                bytes =  StringUtils.isBlank(value) ? HConstants.EMPTY_BYTE_ARRAY : Bytes.toBytes(value);
+                break;
+            case BINARY_STRING:
+                bytes = StringUtils.isBlank(value) ? HConstants.EMPTY_BYTE_ARRAY : Bytes.toBytesBinary(value);
+                break;
+            default:
+                throw DataXException.asDataXException(Hbase21xReaderErrorCode.ILLEGAL_VALUE, "Hbasereader COLUMN FILTER 不支持您配置的列类型:" + columnType);
+        }
+        return bytes;
+    }
 }

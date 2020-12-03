@@ -3,9 +3,14 @@ package ni.danny.datax.plugin.reader.hbase21xreader;
 import com.alibaba.datax.common.base.BaseObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HbaseColumnCell extends BaseObject {
+    private static final Logger LOG = LoggerFactory.getLogger(HbaseColumnCell.class);
+
     private ColumnType columnType;
 
     // columnName 格式为：列族:列名
@@ -22,6 +27,9 @@ public class HbaseColumnCell extends BaseObject {
 
     // 只在类型是时间类型时，才会设置该值，无默认值。形式如：yyyy-MM-dd HH:mm:ss
     private String dateformat;
+
+    //过滤值，当查询结果与该值相同时，过滤
+    private byte[] filterValue = HConstants.EMPTY_BYTE_ARRAY;
 
     private HbaseColumnCell(Builder builder) {
         this.columnType = builder.columnType;
@@ -55,6 +63,14 @@ public class HbaseColumnCell extends BaseObject {
         if (builder.dateformat != null) {
             this.dateformat = builder.dateformat;
         }
+
+        if(builder.filterValue != null){
+            try{
+                this.filterValue = Hbase21xHelper.convertFilterToBytesAssignType(this.columnType,builder.filterValue);
+            }catch (Exception ex){
+                LOG.warn(ex.getMessage());
+            }
+        }
     }
 
     public ColumnType getColumnType() {
@@ -85,11 +101,17 @@ public class HbaseColumnCell extends BaseObject {
         return isConstant;
     }
 
+    public byte[] getFilterValue() {
+        return filterValue;
+    }
+
     // 内部 builder 类
     public static class Builder {
         private ColumnType columnType;
         private String columnName;
         private String columnValue;
+
+        private String filterValue;
 
         private String dateformat;
 
@@ -109,6 +131,11 @@ public class HbaseColumnCell extends BaseObject {
 
         public Builder dateformat(String dateformat) {
             this.dateformat = dateformat;
+            return this;
+        }
+
+        public Builder filterValue(String filterValue){
+            this.filterValue = filterValue;
             return this;
         }
 

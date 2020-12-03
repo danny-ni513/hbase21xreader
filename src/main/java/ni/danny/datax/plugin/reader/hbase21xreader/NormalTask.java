@@ -4,12 +4,14 @@ import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.element.Record;
 import com.alibaba.datax.common.element.StringColumn;
 import com.alibaba.datax.common.util.Configuration;
+import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -72,6 +74,11 @@ public class NormalTask extends HbaseAbstractTask {
                         columnFamily =cell.getColumnFamily();
                         qualifier = cell.getQualifier();
                         hbaseColumnValue = result.getValue(columnFamily,qualifier);
+                        if( !Arrays.equals(HConstants.EMPTY_BYTE_ARRAY,cell.getFilterValue())
+                                &&Arrays.equals(cell.getFilterValue(),hbaseColumnValue)){
+                            hbaseColumnValue = HConstants.EMPTY_BYTE_ARRAY;
+                            //LOG.info("REMOVE FILTER VALUE====>");
+                        }
                     }
 
                     Column hbaseColumn = super.convertBytesToAssignType(columnType,hbaseColumnValue,cell.getDateformat());
