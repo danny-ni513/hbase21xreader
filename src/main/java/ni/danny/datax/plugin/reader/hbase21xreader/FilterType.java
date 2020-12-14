@@ -7,7 +7,8 @@ import java.util.Arrays;
 
 public enum FilterType {
     CONST("const"),
-    DATE("date")
+    DATE("date"),
+    WEEK("week")
     ;
     private  String typeName;
 

@@ -16,6 +16,7 @@ import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.Pair;
 import org.joda.time.DateTime;
+import org.joda.time.Days;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -236,10 +237,11 @@ public class Hbase21xHelper {
         if(filter!=null){
             String filterTypeName = configuration.getString(Key.FILTER_TYPE);
             FilterType filterType =FilterType.getByTypeName(filterTypeName);
+            filterValue = configuration.getString(Key.FILTER_VALUE);
+            String tmpFilterValue = configuration.getString(Key.FILTER_VALUE);
             switch(filterType){
-                case CONST: filterValue = configuration.getString(Key.FILTER_VALUE); break;
+                case CONST:  break;
                 case DATE:
-                    String tmpFilterValue = configuration.getString(Key.FILTER_VALUE);
                     String filterFormat = configuration.getString(Key.FILTER_FORMAT);
                     if(org.apache.commons.lang.StringUtils.isNumeric(tmpFilterValue)){
                         try{
@@ -258,6 +260,21 @@ public class Hbase21xHelper {
                         throw DataXException.asDataXException(Hbase21xReaderErrorCode.ILLEGAL_VALUE,
                                 "DATE FILTER ,VALUE参数仅允许使用数字");
                     }
+                    break;
+                case WEEK:
+                    if(org.apache.commons.lang.StringUtils.isNumeric(tmpFilterValue)){
+                        try{
+                            int minus = Integer.parseInt(tmpFilterValue);
+                            filterValue = "_"+Hbase21xHelper.getWeekNo(new DateTime().minusDays(minus))+"_";
+                        }catch (Exception e){
+                            throw DataXException.asDataXException(Hbase21xReaderErrorCode.ILLEGAL_VALUE,
+                                    "DATE FILTER ,FORMAT参数不合法");
+                        }
+                    }else{
+                        throw DataXException.asDataXException(Hbase21xReaderErrorCode.ILLEGAL_VALUE,
+                                "DATE FILTER ,VALUE参数仅允许使用数字");
+                    }
+
                     break;
                 default:throw DataXException.asDataXException(Hbase21xReaderErrorCode.ILLEGAL_VALUE,
                         String.format("Hbasereader 不支持该类型:%s, 目前支持的类型是:%s", filterTypeName, null));
@@ -582,5 +599,33 @@ public class Hbase21xHelper {
                 throw DataXException.asDataXException(Hbase21xReaderErrorCode.ILLEGAL_VALUE, "Hbasereader COLUMN FILTER 不支持您配置的列类型:" + columnType);
         }
         return bytes;
+    }
+
+    public static String getWeekNo(DateTime date){
+        DateTime firstDate =date.withMonthOfYear(1).withDayOfMonth(1);
+        int firstWeekDay = firstDate.getDayOfWeek();
+        switch (firstWeekDay){
+            case 1:firstDate = firstDate.plusDays(4);break;
+            case 2:firstDate = firstDate.plusDays(3);break;
+            case 3:firstDate = firstDate.plusDays(2);break;
+            case 4:firstDate = firstDate.plusDays(1);break;
+            case 5:firstDate = firstDate.plusDays(0);break;
+            case 6:firstDate = firstDate.plusDays(6);break;
+            case 7:firstDate = firstDate.plusDays(5);break;
+        }
+
+        int days = Days.daysBetween(firstDate,date).getDays()-1;
+        int weeks = 0;
+        if(days%7 <=5){
+            weeks = days/7+1;
+        }else{
+            weeks = days/7+2;
+        }
+
+        if(weeks<10){
+            return date.getYear()+"0"+weeks;
+        }else{
+            return date.getYear()+""+weeks;
+        }
     }
 }
