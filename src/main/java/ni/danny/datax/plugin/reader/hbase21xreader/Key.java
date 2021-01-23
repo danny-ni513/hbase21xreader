@@ -59,5 +59,7 @@ public final class Key {
 
     public final static String DEFAULT = "default";
 
+    public final static String WITH_VERSION_INFO = "withVersionInfo";
+
 
 }

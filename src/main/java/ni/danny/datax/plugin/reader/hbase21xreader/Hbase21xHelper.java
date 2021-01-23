@@ -307,6 +307,8 @@ public class Hbase21xHelper {
             String dateformat = aColumn.get(Key.FORMAT);
             String filterValue = aColumn.get(Key.FILTER);
             String defaultValue = aColumn.get(Key.DEFAULT);
+            boolean withVersionInfo = false;
+            try{ withVersionInfo = Boolean.valueOf(aColumn.getOrDefault(Key.WITH_VERSION_INFO,"false").toLowerCase()); }catch (Exception ex){ }
 
             //LOG.info("columnName = [{}],filterValue=[{}],defaultValue = [{}]",columnName,filterValue,defaultValue);
 
@@ -324,6 +326,7 @@ public class Hbase21xHelper {
                         .dateformat(dateformat)
                         .filterValue(filterValue)
                         .defaultValue(defaultValue)
+                        .withVersionInfo(withVersionInfo)
                         .build();
             } else {
                 Validate.isTrue(StringUtils.isNotBlank(columnName) || StringUtils.isNotBlank(columnValue), "Hbasereader 在 normal 方式读取时，其列配置中，如果类型不是时间，则要么是 type + name 的组合，要么是type + value 的组合. 而您的配置非这两种组合，请检查并修改.");
@@ -332,6 +335,7 @@ public class Hbase21xHelper {
                         .columnValue(columnValue)
                         .filterValue(filterValue)
                         .defaultValue(defaultValue)
+                        .withVersionInfo(withVersionInfo)
                         .build();
             }
 
@@ -340,38 +344,6 @@ public class Hbase21xHelper {
 
         return hbaseColumnCells;
     }
-
-
-    //将多竖表column变成<familyQualifier,<>>形式
-//    public static HashMap<String, HashMap<String,String>> parseColumnOfMultiversionMode(List<Map> column){
-//
-//        HashMap<String,HashMap<String,String>> familyQualifierMap = new HashMap<String,HashMap<String,String>>();
-//        for (Map<String, String> aColumn : column) {
-//            String type = aColumn.get(Key.TYPE);
-//            String columnName = aColumn.get(Key.NAME);
-//            String dateformat = aColumn.get(Key.FORMAT);
-//
-//            ColumnType.getByTypeName(type);
-//            Validate.isTrue(StringUtils.isNotBlank(columnName), "Hbasereader 中，column 需要配置列名称name,格式为 列族:列名，您的配置为空,请检查并修改.");
-//
-//            String familyQualifier;
-//            if( !Hbase21xHelper.isRowkeyColumn(columnName)){
-//                String[] cfAndQualifier = columnName.split(":");
-//                if ( cfAndQualifier.length != 2) {
-//                    throw DataXException.asDataXException(Hbase21xReaderErrorCode.ILLEGAL_VALUE, "Hbasereader 中，column 的列配置格式应该是：列族:列名. 您配置的列错误：" + columnName);
-//                }
-//                familyQualifier = StringUtils.join(cfAndQualifier[0].trim(),":",cfAndQualifier[1].trim());
-//            }else{
-//                familyQualifier = columnName.trim();
-//            }
-//
-//            HashMap<String,String> typeAndFormat = new  HashMap<String,String>();
-//            typeAndFormat.put(Key.TYPE,type);
-//            typeAndFormat.put(Key.FORMAT,dateformat);
-//            familyQualifierMap.put(familyQualifier,typeAndFormat);
-//        }
-//        return familyQualifierMap;
-//    }
 
     public static List<com.alibaba.datax.common.util.Configuration> split(com.alibaba.datax.common.util.Configuration configuration) {
         byte[] startRowkeyByte = Hbase21xHelper.convertUserStartRowkey(configuration);

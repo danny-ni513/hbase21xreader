@@ -103,8 +103,10 @@ public class MultiVersionTask extends HbaseAbstractTask{
                     Column hbaseColumn = super.convertBytesToAssignType(columnType,hbaseColumnValue,cell.getDateformat());
                     record.addColumn(hbaseColumn);
                     //自动增加两列：TIMESTAMP & 转成日期时间类型的数据--STRING类型
-                    record.addColumn(new LongColumn(columnValueFirstTimpstamp));
-                    record.addColumn(new StringColumn(new DateTime(columnValueFirstTimpstamp).toString(cell.getDateformat())));
+                    if(cell.getWithVersionInfo()){
+                        record.addColumn(new LongColumn(columnValueFirstTimpstamp));
+                        record.addColumn(new StringColumn(new DateTime(columnValueFirstTimpstamp).toString(cell.getDateformat())));
+                    }
                 }
             }
         }catch (Exception e){

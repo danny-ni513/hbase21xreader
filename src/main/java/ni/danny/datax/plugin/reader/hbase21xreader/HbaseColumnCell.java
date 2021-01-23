@@ -25,6 +25,9 @@ public class HbaseColumnCell extends BaseObject {
     //当配置了 columnValue 时，isConstant=true（这个成员变量是用于方便使用本类的地方判断是否是常量类型字段）
     private boolean isConstant;
 
+    //仅多版本模式下有效，控制是否返回最新数据的首次出现版本信息timestamp
+    private boolean withVersionInfo;
+
     // 只在类型是时间类型时，才会设置该值，无默认值。形式如：yyyy-MM-dd HH:mm:ss
     private String dateformat;
 
@@ -44,6 +47,7 @@ public class HbaseColumnCell extends BaseObject {
 
         if (builder.columnName != null) {
             this.isConstant = false;
+            this.withVersionInfo = builder.withVersionInfo;
             this.columnName = builder.columnName;
             // 如果 columnName 不是 rowkey，则必须配置为：列族:列名 格式
             if (!Hbase21xHelper.isRowkeyColumn(this.columnName)) {
@@ -120,6 +124,7 @@ public class HbaseColumnCell extends BaseObject {
     }
 
     public byte[] getDefaultValue(){ return defaultValue; }
+    public boolean getWithVersionInfo(){return withVersionInfo; }
 
     // 内部 builder 类
     public static class Builder {
@@ -133,8 +138,15 @@ public class HbaseColumnCell extends BaseObject {
 
         private String defaultValue;
 
+        private boolean withVersionInfo;
+
         public Builder(ColumnType columnType) {
             this.columnType = columnType;
+        }
+
+        public Builder withVersionInfo(boolean withVersionInfo){
+            this.withVersionInfo = withVersionInfo;
+            return this;
         }
 
         public Builder columnName(String columnName) {
