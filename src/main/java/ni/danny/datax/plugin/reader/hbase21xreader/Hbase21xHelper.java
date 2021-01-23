@@ -295,8 +295,8 @@ public class Hbase21xHelper {
         return Constant.ROWKEY_FLAG.equalsIgnoreCase(columnName);
     }
 
-    public static List<HbaseColumnCell> parseColumnOfNormalMode(List<Map> column){
-        List<HbaseColumnCell> hbaseColumnCells = new ArrayList<HbaseColumnCell>();
+    public static List<HbaseColumnCell> parseColumn(List<Map> column){
+        List<HbaseColumnCell> hbaseColumnCells = new ArrayList<>(column.size());
 
         HbaseColumnCell oneColumnCell;
 
@@ -343,35 +343,35 @@ public class Hbase21xHelper {
 
 
     //将多竖表column变成<familyQualifier,<>>形式
-    public static HashMap<String, HashMap<String,String>> parseColumnOfMultiversionMode(List<Map> column){
-
-        HashMap<String,HashMap<String,String>> familyQualifierMap = new HashMap<String,HashMap<String,String>>();
-        for (Map<String, String> aColumn : column) {
-            String type = aColumn.get(Key.TYPE);
-            String columnName = aColumn.get(Key.NAME);
-            String dateformat = aColumn.get(Key.FORMAT);
-
-            ColumnType.getByTypeName(type);
-            Validate.isTrue(StringUtils.isNotBlank(columnName), "Hbasereader 中，column 需要配置列名称name,格式为 列族:列名，您的配置为空,请检查并修改.");
-
-            String familyQualifier;
-            if( !Hbase21xHelper.isRowkeyColumn(columnName)){
-                String[] cfAndQualifier = columnName.split(":");
-                if ( cfAndQualifier.length != 2) {
-                    throw DataXException.asDataXException(Hbase21xReaderErrorCode.ILLEGAL_VALUE, "Hbasereader 中，column 的列配置格式应该是：列族:列名. 您配置的列错误：" + columnName);
-                }
-                familyQualifier = StringUtils.join(cfAndQualifier[0].trim(),":",cfAndQualifier[1].trim());
-            }else{
-                familyQualifier = columnName.trim();
-            }
-
-            HashMap<String,String> typeAndFormat = new  HashMap<String,String>();
-            typeAndFormat.put(Key.TYPE,type);
-            typeAndFormat.put(Key.FORMAT,dateformat);
-            familyQualifierMap.put(familyQualifier,typeAndFormat);
-        }
-        return familyQualifierMap;
-    }
+//    public static HashMap<String, HashMap<String,String>> parseColumnOfMultiversionMode(List<Map> column){
+//
+//        HashMap<String,HashMap<String,String>> familyQualifierMap = new HashMap<String,HashMap<String,String>>();
+//        for (Map<String, String> aColumn : column) {
+//            String type = aColumn.get(Key.TYPE);
+//            String columnName = aColumn.get(Key.NAME);
+//            String dateformat = aColumn.get(Key.FORMAT);
+//
+//            ColumnType.getByTypeName(type);
+//            Validate.isTrue(StringUtils.isNotBlank(columnName), "Hbasereader 中，column 需要配置列名称name,格式为 列族:列名，您的配置为空,请检查并修改.");
+//
+//            String familyQualifier;
+//            if( !Hbase21xHelper.isRowkeyColumn(columnName)){
+//                String[] cfAndQualifier = columnName.split(":");
+//                if ( cfAndQualifier.length != 2) {
+//                    throw DataXException.asDataXException(Hbase21xReaderErrorCode.ILLEGAL_VALUE, "Hbasereader 中，column 的列配置格式应该是：列族:列名. 您配置的列错误：" + columnName);
+//                }
+//                familyQualifier = StringUtils.join(cfAndQualifier[0].trim(),":",cfAndQualifier[1].trim());
+//            }else{
+//                familyQualifier = columnName.trim();
+//            }
+//
+//            HashMap<String,String> typeAndFormat = new  HashMap<String,String>();
+//            typeAndFormat.put(Key.TYPE,type);
+//            typeAndFormat.put(Key.FORMAT,dateformat);
+//            familyQualifierMap.put(familyQualifier,typeAndFormat);
+//        }
+//        return familyQualifierMap;
+//    }
 
     public static List<com.alibaba.datax.common.util.Configuration> split(com.alibaba.datax.common.util.Configuration configuration) {
         byte[] startRowkeyByte = Hbase21xHelper.convertUserStartRowkey(configuration);
@@ -543,14 +543,14 @@ public class Hbase21xHelper {
                 String maxVersion = originalConfig.getString(Key.MAX_VERSION);
                 Validate.isTrue(maxVersion == null, "您配置的是 normal 模式读取 hbase 中的数据，所以不能配置无关项：maxVersion");
                 // 通过 parse 进行 column 格式的进一步检查
-                Hbase21xHelper.parseColumnOfNormalMode(column);
+                Hbase21xHelper.parseColumn(column);
                 break;
             }
-            case MultiVersionFixedColumn:{
+            case MultiVersionColumn:{
                 // multiVersionFixedColumn 模式需要配置 maxVersion
                 checkMaxVersion(originalConfig, mode);
 
-                Hbase21xHelper.parseColumnOfMultiversionMode(column);
+                Hbase21xHelper.parseColumn(column);
                 break;
             }
             default:

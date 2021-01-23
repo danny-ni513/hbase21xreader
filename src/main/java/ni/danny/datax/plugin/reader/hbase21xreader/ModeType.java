@@ -4,9 +4,14 @@ import com.alibaba.datax.common.exception.DataXException;
 
 import java.util.Arrays;
 
+/**
+ * @author bingobing
+ */
+
 public enum ModeType {
     Normal("normal"),
-    MultiVersionFixedColumn("multiVersionFixedColumn")
+    MultiVersionColumn("multiVersionColumn"),
+    //MultiVersionFixedColumn("multiVersionFixedColumn")
     ;
 
     private String mode;

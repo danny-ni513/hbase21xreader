@@ -14,7 +14,11 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+/**
+ * @author bingobing
+ */
 public class NormalTask extends HbaseAbstractTask {
     private final static Logger LOG = LoggerFactory.getLogger(NormalTask.class);
 
@@ -24,7 +28,7 @@ public class NormalTask extends HbaseAbstractTask {
     public NormalTask(Configuration configuration) {
         super(configuration);
         this.column = configuration.getList(Key.COLUMN, Map.class);
-        this.hbaseColumnCells = Hbase21xHelper.parseColumnOfNormalMode(this.column);
+        this.hbaseColumnCells = Hbase21xHelper.parseColumn(this.column);
     }
 
     @Override

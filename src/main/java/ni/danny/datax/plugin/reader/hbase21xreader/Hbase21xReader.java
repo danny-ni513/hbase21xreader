@@ -10,6 +10,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+/**
+ * @author bingobing
+ */
 public class Hbase21xReader extends Reader {
     public static class Job extends Reader.Job{
         private Configuration originConfig = null;
@@ -45,6 +48,9 @@ public class Hbase21xReader extends Reader {
             switch (modeType){
                 case Normal:
                     this.hbaseTaskProxy = new NormalTask(this.taskConfig);
+                    break;
+                case MultiVersionColumn:
+                    this.hbaseTaskProxy = new MultiVersionTask(this.taskConfig);
                     break;
                 default:
                     throw DataXException.asDataXException(Hbase21xReaderErrorCode.ILLEGAL_VALUE, "Hbasereader 不支持此类模式:" + modeType);
