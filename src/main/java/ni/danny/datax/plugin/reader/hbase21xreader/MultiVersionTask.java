@@ -71,24 +71,22 @@ public class MultiVersionTask extends HbaseAbstractTask{
                         }
                     }else{
                         String finalColumnName = columnName;
-                        List<Hbase21xCell> sortedList = result.listCells().stream().map(resultCell ->new Hbase21xCell(resultCell))
+                        Hbase21xCell finalCell = result.listCells().stream().map(resultCell ->new Hbase21xCell(resultCell))
                                 .filter(hbase21xCell -> finalColumnName.equals(hbase21xCell.getColumnName()))
-                                .sorted(Comparator.comparing(Hbase21xCell::getTimestamp).reversed()).collect(Collectors.toList());
-                        byte[] value=null;
-                        Long firstTime = 0L;
-                        for(Hbase21xCell hbase21xCell: sortedList){
-                            byte[] tmpValue = CellUtil.cloneValue(hbase21xCell.getCell());
-                            if(value==null){
-                                value = tmpValue;
-                                firstTime = hbase21xCell.getTimestamp();
-                            }else if(Bytes.compareTo(value,tmpValue)==0){
-                                firstTime = hbase21xCell.getTimestamp();
-                            }else{
-                                break;
-                            }
-                        }
-                        hbaseColumnValue = value;
-                        columnValueFirstTimpstamp = firstTime;
+                                .sorted(Comparator.comparing(Hbase21xCell::getTimestamp).reversed()).sorted(Comparator.comparing(Hbase21xCell::getTimestamp).reversed()).reduce(null,(a,b)->{
+                                    if(a==null){
+                                        return b;
+                                    }else if(b!=null &&Bytes.compareTo(CellUtil.cloneValue(a.getCell()),CellUtil.cloneValue(b.getCell()))==0){
+                                        return b;
+                                    }else{
+                                        return a;
+                                    }
+                                });
+
+                        hbaseColumnValue = CellUtil.cloneValue(finalCell.getCell());
+                        columnValueFirstTimpstamp = finalCell.getTimestamp();
+
+
                         if( !Arrays.equals(HConstants.EMPTY_BYTE_ARRAY,cell.getFilterValue())
                                 &&Arrays.equals(cell.getFilterValue(),hbaseColumnValue)){
                             hbaseColumnValue = HConstants.EMPTY_BYTE_ARRAY;

@@ -47,7 +47,7 @@ public class Test {
                             return a;
                         }
                     });
-            log.info("finalCell==>{}",finalCell);
+            log.info("finalCell==>{},value=[{}]",finalCell,new String(CellUtil.cloneValue(finalCell.getCell())));
            }
 
 
