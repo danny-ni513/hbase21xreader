@@ -35,25 +35,20 @@ public class Test {
         for(String columnName:columnNames){
             currentColumnName = columnName;
             String finalCurrentColumnName = currentColumnName;
-            List<Hbase21xCell> sortedList = result.listCells().stream().map(cell ->new Hbase21xCell(cell))
+            Hbase21xCell finalCell = result.listCells().stream().map(cell ->new Hbase21xCell(cell))
                     // .collect(groupingBy(Hbase21xCell::getRowkeyAndColumnName))
                     .filter(hbase21xCell -> finalCurrentColumnName.equals(hbase21xCell.getColumnName()))
-                    .sorted(Comparator.comparing(Hbase21xCell::getTimestamp).reversed()).collect(Collectors.toList());
-            byte[] value=null;
-            Long firstTime = 0L;
-            for(Hbase21xCell hbase21xCell: sortedList){
-                byte[] tmpValue = CellUtil.cloneValue(hbase21xCell.getCell());
-                if(value==null){
-                    value = tmpValue;
-                    firstTime = hbase21xCell.getTimestamp();
-                }else if(Bytes.compareTo(value,tmpValue)==0){
-                    firstTime = hbase21xCell.getTimestamp();
-                }else{
-                    break;
-                }
-            }
-            log.info("columnName={},value={};firstTime={},firstTimeStr={}",currentColumnName,new String(value),firstTime,new DateTime(firstTime).toString("yyyyMMdd HH:mm:ss.SSS"));
-        }
+                    .sorted(Comparator.comparing(Hbase21xCell::getTimestamp).reversed()).reduce(null,(a,b)->{
+                        if(a==null){
+                            return b;
+                        }else if(b!=null &&Bytes.compareTo(CellUtil.cloneValue(a.getCell()),CellUtil.cloneValue(b.getCell()))==0){
+                            return b;
+                        }else{
+                            return a;
+                        }
+                    });
+            log.info("finalCell==>{}",finalCell);
+           }
 
 
     }
