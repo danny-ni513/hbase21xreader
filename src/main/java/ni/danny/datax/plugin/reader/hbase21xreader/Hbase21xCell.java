@@ -11,12 +11,21 @@ public class Hbase21xCell {
     private String columnName;
     private Long timestamp;
     private Cell cell;
+    private Boolean sameValueWithLast;
     public Hbase21xCell(Cell cell){
         this.cell = cell;
         this.rowkey = new String(CellUtil.cloneRow(cell));
         this.columnName = new String(CellUtil.cloneFamily(cell))+":"+new String(CellUtil.cloneQualifier(cell));
         this.timestamp = cell.getTimestamp();
+    }
 
+    public Hbase21xCell setSameValueWithLast(Boolean sameValueWithLast){
+        this.sameValueWithLast = sameValueWithLast;
+        return this;
+    }
+
+    public Boolean getSameValueWithLast(){
+        return this.sameValueWithLast;
     }
 
     public String getRowkey() {

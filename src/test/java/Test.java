@@ -42,9 +42,14 @@ public class Test {
                         if(a==null){
                             return b;
                         }else if(b!=null &&Bytes.compareTo(CellUtil.cloneValue(a.getCell()),CellUtil.cloneValue(b.getCell()))==0){
-                            return b;
+                            if(a.getSameValueWithLast() == null || a.getSameValueWithLast()==true){
+                                return b.setSameValueWithLast(true);
+                            }else{
+                                return a;
+                            }
+
                         }else{
-                            return a;
+                            return a.setSameValueWithLast(false);
                         }
                     });
             log.info("finalCell==>{},value=[{}]",finalCell,new String(CellUtil.cloneValue(finalCell.getCell())));

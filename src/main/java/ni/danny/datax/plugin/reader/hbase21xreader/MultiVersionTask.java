@@ -73,19 +73,23 @@ public class MultiVersionTask extends HbaseAbstractTask{
                         String finalColumnName = columnName;
                         Hbase21xCell finalCell = result.listCells().stream().map(resultCell ->new Hbase21xCell(resultCell))
                                 .filter(hbase21xCell -> finalColumnName.equals(hbase21xCell.getColumnName()))
-                                .sorted(Comparator.comparing(Hbase21xCell::getTimestamp).reversed()).sorted(Comparator.comparing(Hbase21xCell::getTimestamp).reversed()).reduce(null,(a,b)->{
+                                .sorted(Comparator.comparing(Hbase21xCell::getTimestamp).reversed()).reduce(null,(a,b)->{
                                     if(a==null){
                                         return b;
                                     }else if(b!=null &&Bytes.compareTo(CellUtil.cloneValue(a.getCell()),CellUtil.cloneValue(b.getCell()))==0){
-                                        return b;
+                                        //预防ABA问题，导致最终数据取到第一个
+                                        if(a.getSameValueWithLast() == null || a.getSameValueWithLast()==true){
+                                            return b.setSameValueWithLast(true);
+                                        }else{
+                                            return a;
+                                        }
                                     }else{
-                                        return a;
+                                        return a.setSameValueWithLast(false);
                                     }
                                 });
 
                         hbaseColumnValue = CellUtil.cloneValue(finalCell.getCell());
                         columnValueFirstTimpstamp = finalCell.getTimestamp();
-
 
                         if( !Arrays.equals(HConstants.EMPTY_BYTE_ARRAY,cell.getFilterValue())
                                 &&Arrays.equals(cell.getFilterValue(),hbaseColumnValue)){
