@@ -14,7 +14,7 @@
                 <include>plugin.json</include>
                 <include>plugin_job_template.json</include>
             </includes>
-            <outputDirectory>plugin/reader/hbase11xreader</outputDirectory>
+            <outputDirectory>plugin/reader/hbase21xreader</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>target/</directory>
