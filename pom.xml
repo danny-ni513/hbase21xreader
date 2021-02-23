@@ -6,7 +6,7 @@
 
     <groupId>ni.danny</groupId>
     <artifactId>hbase21xreader</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.0.1-SNAPSHOT</version>
 
     <properties>
         <hbase.version>2.1.2</hbase.version>
