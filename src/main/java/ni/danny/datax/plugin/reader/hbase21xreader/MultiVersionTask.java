@@ -55,6 +55,7 @@ public class MultiVersionTask extends HbaseAbstractTask{
             String columnName;
             ColumnType columnType;
             Long columnValueFirstTimpstamp=0L;
+            String columnValueFirstTime = "";
             for(HbaseColumnCell cell: this.hbaseColumnCells){
                 columnType = cell.getColumnType();
                 if(cell.isConstant()){
@@ -88,8 +89,12 @@ public class MultiVersionTask extends HbaseAbstractTask{
                                     }
                                 });
 
-                        hbaseColumnValue = CellUtil.cloneValue(finalCell.getCell());
-                        columnValueFirstTimpstamp = finalCell.getTimestamp();
+                        hbaseColumnValue = null;
+                        if(finalCell!=null&&finalCell.getCell()!=null){
+                            hbaseColumnValue = CellUtil.cloneValue(finalCell.getCell());
+                            columnValueFirstTimpstamp = finalCell.getTimestamp();
+                            columnValueFirstTime = new DateTime(columnValueFirstTimpstamp).toString(cell.getDateformat());
+                        }
 
                         if( !Arrays.equals(HConstants.EMPTY_BYTE_ARRAY,cell.getFilterValue())
                                 &&Arrays.equals(cell.getFilterValue(),hbaseColumnValue)){
@@ -107,7 +112,7 @@ public class MultiVersionTask extends HbaseAbstractTask{
                     //自动增加两列：TIMESTAMP & 转成日期时间类型的数据--STRING类型
                     if(cell.getWithVersionInfo()){
                         record.addColumn(new LongColumn(columnValueFirstTimpstamp));
-                        record.addColumn(new StringColumn(new DateTime(columnValueFirstTimpstamp).toString(cell.getDateformat())));
+                        record.addColumn(new StringColumn(columnValueFirstTime));
                     }
                 }
             }
