@@ -307,6 +307,9 @@ public class Hbase21xHelper {
             String dateformat = aColumn.get(Key.FORMAT);
             String filterValue = aColumn.get(Key.FILTER);
             String defaultValue = aColumn.get(Key.DEFAULT);
+            if(dateformat == null){
+                dateformat = Constant.DEFAULT_DATA_FORMAT;
+            }
             boolean withVersionInfo = false;
             try{ withVersionInfo = Boolean.valueOf(aColumn.getOrDefault(Key.WITH_VERSION_INFO,"false").toLowerCase()); }catch (Exception ex){ }
 
@@ -314,9 +317,7 @@ public class Hbase21xHelper {
 
             if (type == ColumnType.DATE) {
 
-                if(dateformat == null){
-                    dateformat = Constant.DEFAULT_DATA_FORMAT;
-                }
+
                 Validate.isTrue(StringUtils.isNotBlank(columnName) || StringUtils.isNotBlank(columnValue), "Hbasereader 在 normal 方式读取时则要么是 type + name + format 的组合，要么是type + value + format 的组合. 而您的配置非这两种组合，请检查并修改.");
 
                 oneColumnCell = new HbaseColumnCell
@@ -333,6 +334,7 @@ public class Hbase21xHelper {
                 oneColumnCell = new HbaseColumnCell.Builder(type)
                         .columnName(columnName)
                         .columnValue(columnValue)
+                        .dateformat(dateformat)
                         .filterValue(filterValue)
                         .defaultValue(defaultValue)
                         .withVersionInfo(withVersionInfo)
